@@ -1,15 +1,14 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require('jsonwebtoken');
-const keys = require('../../config/keys');
 const User = require("../../models/User");
+const bcrypt = require("bcryptjs");
+const keys = require('../../config/keys');
+const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const validateRegisterInput = require('../../validation/register');
 const validateLoginInput = require('../../validation/login');
 
 const router = express.Router();
 
-// router.get("/test", (req, res) => res.json({ msg: "This is the users route" }));
 router.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.json({
         id: req.user.id,
@@ -25,15 +24,12 @@ router.post('/register', (req, res) => {
         return res.status(400).json(errors);
     }
 
-    // Check to make sure nobody has already registered with a duplicate email
     User.findOne({ handle: req.body.handle })
         .then(user => {
             if (user) {
-                // Throw a 400 error if the email address already exists
                 errors.handle = "User already exists";
                 return res.status(400).json(errors)
             } else {
-                // Otherwise create a new user
                 const newUser = new User({
                     handle: req.body.handle,
                     email: req.body.email,
@@ -87,7 +83,6 @@ router.post('/login', (req, res) => {
                         jwt.sign(
                             payload,
                             keys.secretOrKey,
-                            //Tell the key to expire in one hour
                             { expiresIn: 3600 },
                             (err, token) => {
                                 res.json({
